@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download Hosting Website</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .upload-section, .download-section {
+            margin: 20px 0;
+        }
+        input[type="file"] {
+            display: block;
+            margin: 10px 0;
+        }
+        .files-list {
+            margin-top: 20px;
+        }
+        .file-item {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Upload and Share Files</h1>
+
+    <div class="upload-section">
+        <h2>Upload a File</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" id="fileInput" name="file" required>
+            <button type="submit">Upload File</button>
+        </form>
+    </div>
+
+    <div class="download-section">
+        <h2>Available Files for Download</h2>
+        <div class="files-list" id="filesList"></div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData();
+            const fileInput = document.getElementById('fileInput');
+            formData.append('file', fileInput.files[0]);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('File uploaded successfully');
+                    loadFiles();
+                } else {
+                    alert('File upload failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error uploading file');
+            });
+        });
+
+        function loadFiles() {
+            fetch('/files')
+            .then(response => response.json())
+            .then(data => {
+                const filesList = document.getElementById('filesList');
+                filesList.innerHTML = '';
+                data.files.forEach(file => {
+                    const fileItem = document.createElement('div');
+                    fileItem.classList.add('file-item');
+                    fileItem.innerHTML = `<a href="/download/${file}">${file}</a>`;
+                    filesList.appendChild(fileItem);
+                });
+            });
+        }
+
+        // Load files on page load
+        loadFiles();
+    </script>
+</body>
+</html>
